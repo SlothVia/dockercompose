@@ -1,0 +1,62 @@
+---
+
+version: "3.8"
+
+services:
+  prometheus:
+     command: 
+       - '--config.file=/etc/prometheus/prometheus.yml'
+     image: prom/prometheus:v2.25.0
+     volumes:
+       - ./config/prometheus:/etc/prometheus
+     ports:
+       - '9490:9090'   
+  prometheusfed:
+     image: prom/prometheus:v2.25.0
+     volumes:
+       - ./config/prometheus:/etc/prometheus
+     command: 
+       - '--config.file=/etc/prometheus/prometheus-fed.yml'
+     ports:
+       - '9480:9090'  
+  alertmanager:
+     image: prom/alertmanager:v0.21.0
+     ports:
+       - '9493:9093'
+
+  pushgateway:
+     image: prom/pushgateway:v1.4.0
+     ports:
+       - '9491:9091'
+
+  node_exporter:
+     image: prom/node-exporter:v1.1.1
+     ports:
+       - '9400:9100'
+    #  container_name: node_exporter
+     command: 
+      - '--path.rootfs=/host'
+     pid: host
+     restart: unless-stopped
+     volumes: 
+      - '/:/host:ro,rslave'
+
+  blackbox_exporter:
+     image: prom/blackbox-exporter:v0.18.0
+     ports:
+       - '9415:9115'
+
+  victoria_metrics:
+     image: victoriametrics/victoria-metrics:v1.54.1
+     volumes: 
+      - './data/victoriametrics:/victoria-metrics-data'
+
+  grafana:
+     image: grafana/grafana:7.4.3
+     ports:
+      - '9430:3000'
+
+  terraform:
+     image: hashicorp/terraform:0.14.7
+    
+
